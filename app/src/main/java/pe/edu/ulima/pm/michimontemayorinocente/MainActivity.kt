@@ -1,16 +1,13 @@
 package pe.edu.ulima.pm.michimontemayorinocente
 
 import android.annotation.SuppressLint
-import android.graphics.BlendMode
-import android.graphics.BlendModeColorFilter
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.ShapeDrawable
-import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
@@ -50,6 +47,10 @@ class MainActivity : AppCompatActivity() {
     var playerTurn : Boolean? = null
     val turnText = "Le toca al jugador "
 
+    var buttonsColor: Int? = null
+
+    var gameCount = 1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -85,20 +86,6 @@ class MainActivity : AppCompatActivity() {
         // Creamos una lista de botones
         butList = listOf(but1, but2, but3, but4, but5, but6, but7, but8, but9)
 
-        //Les damos colorsito
-        val color = Color.rgb((0..255).random(), (0..255).random(), (0..255).random())
-        for (button in butList!!) {
-            val background: Drawable = button!!.background
-
-            if (background is ShapeDrawable) {
-                background.paint.color = color
-            } else if (background is GradientDrawable) {
-                background.setColor(color)
-            } else if (background is ColorDrawable) {
-                background.color = color
-            }
-        }
-
         // Texto Inicial
         textView!!.setText("Le toca al jugador " + player1Text)
 
@@ -126,8 +113,11 @@ class MainActivity : AppCompatActivity() {
                 but9Map
         )
 
+        buttonsColor = Color.rgb((0..255).random(), (0..255).random(), (0..255).random())
+
         // En este punto hacemos la comprobación sobre si la instancia a sido reiniciada y se necesita recrear
         if (savedInstanceState != null){
+            gameCount = savedInstanceState.getInt("count")
             // Asignamos los estados y variables guardados
             var instanceCount = 0
             for (i in mapList!!) {
@@ -148,6 +138,21 @@ class MainActivity : AppCompatActivity() {
                     butList!![i!!["button"] as Int]!!.setText(player2Text)
                 }
 
+            }
+            buttonsColor = savedInstanceState.getInt("buttonColor")
+        }
+
+        if (gameCount > 1) {
+            //Les damos colorsito
+            for (button in butList!!) {
+                val background: Drawable = button!!.background
+                if (background is ShapeDrawable) {
+                    background.paint.color = buttonsColor!!
+                } else if (background is GradientDrawable) {
+                    background.setColor(buttonsColor!!)
+                } else if (background is ColorDrawable) {
+                    background.color = buttonsColor!!
+                }
             }
         }
 
@@ -196,10 +201,15 @@ class MainActivity : AppCompatActivity() {
                 but9Map!!["state"] as Int
         ))
 
+        // Se guarda el color de los botones
+        savedInstanceState.putInt("buttonColor", buttonsColor!!)
+
         //Guardado de texto y turno
         savedInstanceState.putString("player1Text", player1Text)
         savedInstanceState.putString("player2Text", player2Text)
         savedInstanceState.putBoolean("playerTurn", playerTurn!!)
+
+        savedInstanceState.putInt("count", gameCount)
     }
 
     @SuppressLint("SetTextI18n")
@@ -248,7 +258,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun restartGame() {
+    private fun restartGame() {
+        gameCount += 1
         for (button in butList!!) {
             button!!.text = null
         }
