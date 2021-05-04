@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initializeGame(savedInstanceState)
+        checkWinner()
     }
 
     fun initializeGame(savedInstanceState: Bundle?) {
@@ -215,31 +216,35 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     fun checkWinner() {
         var winner = 0
-        var gameEnded = false
-        for (i in 0..6) {
-            //check horizontal
-            if (i == 0 || i == 3 || i == 6) {
-                if (mapList!![i]!!["state"] == mapList!![i + 1]!!["state"] && mapList!![i]!!["state"] == mapList!![i + 2]!!["state"]) {
-                    winner = mapList!![i]!!["state"] as Int
-                }
+        //check horizontal
+        for (i in 0..6 step 3) {
+            if (mapList!![i]!!["state"] == mapList!![i + 1]!!["state"] && mapList!![i]!!["state"] == mapList!![i + 2]!!["state"]) {
+                winner = mapList!![i]!!["state"] as Int
+                if (winner != 0) break
             }
+        }
 
+        if (winner == 0) {
             //check vertical
-            if (i < 3) {
+            for (i in 0..2) {
                 if (mapList!![i]!!["state"] == mapList!![i + 3]!!["state"] && mapList!![i]!!["state"] == mapList!![i + 6]!!["state"]) {
                     winner = mapList!![i]!!["state"] as Int
+                    if (winner != 0) break
                 }
             }
         }
 
-        //check diagonal
-        if (mapList!![0]!!["state"] == mapList!![4]!!["state"] && mapList!![0]!!["state"] == mapList!![8]!!["state"]) {
-            winner = mapList!![0]!!["state"] as Int
-        }
-        if (mapList!![2]!!["state"] == mapList!![4]!!["state"] && mapList!![2]!!["state"] == mapList!![6]!!["state"]) {
-            winner = mapList!![2]!!["state"] as Int
+        if (winner == 0) {
+            //check diagonal
+            if (mapList!![0]!!["state"] == mapList!![4]!!["state"] && mapList!![0]!!["state"] == mapList!![8]!!["state"]) {
+                winner = mapList!![0]!!["state"] as Int
+            }
+            if (mapList!![2]!!["state"] == mapList!![4]!!["state"] && mapList!![2]!!["state"] == mapList!![6]!!["state"]) {
+                winner = mapList!![2]!!["state"] as Int
+            }
         }
 
+        var gameEnded = false
         if (winner != 0) {
             findViewById<TextView>(R.id.textTurn).text = "Gana el jugador ${if (winner == 1) player1Text else player2Text}!"
             gameEnded = true
