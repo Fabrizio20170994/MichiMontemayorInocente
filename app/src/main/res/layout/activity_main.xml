@@ -105,14 +105,14 @@
         android:orientation="horizontal"
         android:background="@drawable/rectangle_bg"
         android:layout_marginHorizontal="2dp"
-        android:layout_marginBottom="2dp">
+        android:layout_marginBottom="2dp"
+        android:padding="10dp">
         <TextView
             android:id="@+id/textTurn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginLeft="10dp"
-            android:textColor="@color/black"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:textColor = "?android:textColorPrimary"/>
     </LinearLayout>
 
     </LinearLayout>

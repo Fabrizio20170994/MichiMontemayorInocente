@@ -1,9 +1,20 @@
 package pe.edu.ulima.pm.michimontemayorinocente
 
+import android.annotation.SuppressLint
+import android.graphics.BlendMode
+import android.graphics.BlendModeColorFilter
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.os.Build
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -16,6 +27,8 @@ class MainActivity : AppCompatActivity() {
     var but7:AppCompatButton? = null
     var but8:AppCompatButton? = null
     var but9:AppCompatButton? = null
+
+    var butList : List<AppCompatButton?>? = null
 
     var but1Map : MutableMap<String, Any?>? = null
     var but2Map : MutableMap<String, Any?>? = null
@@ -32,15 +45,27 @@ class MainActivity : AppCompatActivity() {
     var textView : TextView? = null
 
     // Definición de cada texto de jugador y el turno
-    var player1Text = "O"
-    var player2Text = "X"
-    var playerTurn = true
+    var player1Text : String? = "O"
+    var player2Text : String? = "X"
+    var playerTurn : Boolean? = null
     val turnText = "Le toca al jugador "
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        initializeGame(savedInstanceState)
+    }
+
+    fun initializeGame(savedInstanceState: Bundle?) {
+        // Se inicializa cada texto de jugador y el turno
+        if (player1Text == null || player2Text == null) {
+            player1Text = ('A'..'Z').random().toString()
+            do {
+                player2Text = ('A'..'Z').random().toString()
+            } while (player2Text == player1Text)
+        }
+        playerTurn = true
 
         // Guardamos cada botón buscándolos por ID
         but1 = findViewById<AppCompatButton>(R.id.button1)
@@ -58,7 +83,21 @@ class MainActivity : AppCompatActivity() {
 
 
         // Creamos una lista de botones
-        val butList = listOf(but1, but2, but3, but4, but5, but6, but7, but8, but9)
+        butList = listOf(but1, but2, but3, but4, but5, but6, but7, but8, but9)
+
+        //Les damos colorsito
+        val color = Color.rgb((0..255).random(), (0..255).random(), (0..255).random())
+        for (button in butList!!) {
+            val background: Drawable = button!!.background
+
+            if (background is ShapeDrawable) {
+                background.paint.color = color
+            } else if (background is GradientDrawable) {
+                background.setColor(color)
+            } else if (background is ColorDrawable) {
+                background.color = color
+            }
+        }
 
         // Texto Inicial
         textView!!.setText("Le toca al jugador " + player1Text)
@@ -76,15 +115,15 @@ class MainActivity : AppCompatActivity() {
 
         // Lista de mapas para poder iterar en cada uno
         mapList = listOf(
-            but1Map,
-            but2Map,
-            but3Map,
-            but4Map,
-            but5Map,
-            but6Map,
-            but7Map,
-            but8Map,
-            but9Map
+                but1Map,
+                but2Map,
+                but3Map,
+                but4Map,
+                but5Map,
+                but6Map,
+                but7Map,
+                but8Map,
+                but9Map
         )
 
         // En este punto hacemos la comprobación sobre si la instancia a sido reiniciada y se necesita recrear
@@ -100,43 +139,41 @@ class MainActivity : AppCompatActivity() {
             playerTurn = savedInstanceState.getBoolean("playerTurn")!!
 
             // Recreamos la pantalla según los parámetros guardados (turno y estado de los botones)
-            if (playerTurn) textView!!.setText(turnText+player1Text) else textView!!.setText(turnText+player2Text)
+            if (playerTurn!!) textView!!.setText(turnText + player1Text) else textView!!.setText(turnText + player2Text)
             for (i in mapList!!) {
                 if(i!!["state"] == 1) {
-                    butList[i!!["button"] as Int]!!.setText(player1Text)
+                    butList!![i!!["button"] as Int]!!.setText(player1Text)
                 }
                 else if (i!!["state"] == 2) {
-                    butList[i!!["button"] as Int]!!.setText(player2Text)
+                    butList!![i!!["button"] as Int]!!.setText(player2Text)
                 }
 
             }
         }
 
-
-
-
-
         // Iteramos en cada MapList
         for(i in mapList!!){
             // Asignamos un Listener a cada botón que escriba la letra de cada jugador según su turno (y cambie el turno)
-            butList[i!!["button"] as Int]!!.setOnClickListener{
+            butList!![i!!["button"] as Int]!!.setOnClickListener{
                 if(i["state"] == 0) {
-                    if(playerTurn) {
+                    if(playerTurn!!) {
                         // Asignamos el texto de jugador 1 y cambiamos el estado
-                        butList[i["button"] as Int]!!.setText(player1Text)
+                        butList!![i["button"] as Int]!!.setText(player1Text)
                         i["state"] = 1
                         // Cambiamos el texto de Turno
                         textView!!.setText(turnText + player2Text)
                     }
                     else {
                         // Asignamos el texto de jugador 2 y cambiamos el estado
-                        butList[i!!["button"] as Int]!!.setText(player2Text)
+                        butList!![i!!["button"] as Int]!!.setText(player2Text)
                         i["state"] = 2
                         // Cambiamos el texto de Turno
                         textView!!.setText(turnText + player1Text)
                     }
                     // Cambiamos la variable de Turno
-                    playerTurn = !playerTurn
+                    playerTurn = !playerTurn!!
+
+                    checkWinner()
                 }
             }
         }
@@ -148,22 +185,75 @@ class MainActivity : AppCompatActivity() {
 
         // Se guardan los estados de los botones
         savedInstanceState.putIntegerArrayList("buttonState", arrayListOf(
-            but1Map!!["state"] as Int,
-            but2Map!!["state"] as Int,
-            but3Map!!["state"] as Int,
-            but4Map!!["state"] as Int,
-            but5Map!!["state"] as Int,
-            but6Map!!["state"] as Int,
-            but7Map!!["state"] as Int,
-            but8Map!!["state"] as Int,
-            but9Map!!["state"] as Int
+                but1Map!!["state"] as Int,
+                but2Map!!["state"] as Int,
+                but3Map!!["state"] as Int,
+                but4Map!!["state"] as Int,
+                but5Map!!["state"] as Int,
+                but6Map!!["state"] as Int,
+                but7Map!!["state"] as Int,
+                but8Map!!["state"] as Int,
+                but9Map!!["state"] as Int
         ))
 
         //Guardado de texto y turno
         savedInstanceState.putString("player1Text", player1Text)
         savedInstanceState.putString("player2Text", player2Text)
-        savedInstanceState.putBoolean("playerTurn", playerTurn)
+        savedInstanceState.putBoolean("playerTurn", playerTurn!!)
     }
 
+    @SuppressLint("SetTextI18n")
+    fun checkWinner() {
+        var winner = 0
+        var gameEnded = false
+        for (i in 0..6) {
+            //check horizontal
+            if (i == 0 || i == 3 || i == 6) {
+                if (mapList!![i]!!["state"] == mapList!![i + 1]!!["state"] && mapList!![i]!!["state"] == mapList!![i + 2]!!["state"]) {
+                    winner = mapList!![i]!!["state"] as Int
+                }
+            }
 
+            //check vertical
+            if (i < 3) {
+                if (mapList!![i]!!["state"] == mapList!![i + 3]!!["state"] && mapList!![i]!!["state"] == mapList!![i + 6]!!["state"]) {
+                    winner = mapList!![i]!!["state"] as Int
+                }
+            }
+        }
+
+        //check diagonal
+        if (mapList!![0]!!["state"] == mapList!![4]!!["state"] && mapList!![0]!!["state"] == mapList!![8]!!["state"]) {
+            winner = mapList!![0]!!["state"] as Int
+        }
+        if (mapList!![2]!!["state"] == mapList!![4]!!["state"] && mapList!![2]!!["state"] == mapList!![6]!!["state"]) {
+            winner = mapList!![2]!!["state"] as Int
+        }
+
+        if (winner != 0) {
+            findViewById<TextView>(R.id.textTurn).text = "Gana el jugador ${if (winner == 1) player1Text else player2Text}!"
+            gameEnded = true
+        } else {
+            if (!mapList!!.any { it!!["state"] == 0 }) {
+                textView!!.text = "Empate!"
+                gameEnded = true
+            }
+        }
+
+        if (gameEnded) {
+            for (button in butList!!) {
+                button!!.setOnClickListener{restartGame()}
+            }
+            textView!!.setOnClickListener{restartGame()}
+        }
+    }
+
+    fun restartGame() {
+        for (button in butList!!) {
+            button!!.text = null
+        }
+        player1Text = null
+        player2Text = null
+        initializeGame(null)
+    }
 }
